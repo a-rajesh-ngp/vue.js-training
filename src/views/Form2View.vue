@@ -5,78 +5,117 @@
             <h2>CREATE NEW USER </h2> <br>
             <p>
                 Enter firstname: <br>
-                <input v-model="fname" type="text"> <br>
+                <input v-model="fname"
+                    @input="fieldsTouched.fname = true"
+                    :class="{
+                        'inputError': errors.fname,
+                        'inputSuccess': fieldsTouched.fname && !errors.fname 
+                    }"
+                    type="text"> <br>
                 <span v-if="errors.fname" >{{ errors.fname }}</span>
             </p> <br>
             <p>
                 Enter lastname: <br>
-                <input v-model="lname" type="text"> <br>
+                <input v-model="lname" 
+                    @input="fieldsTouched.lname = true"
+                    :class="{
+                        'inputError': errors.lname,
+                        'inputSuccess': fieldsTouched.lname && !errors.lname 
+                    }"
+                    type="text"> <br>
                 <span v-if="errors.lname" >{{ errors.lname }}</span>
             </p> <br>
             <p>
                 Full name: {{ fullname }}
             </p><br>
             <p>
-                Enter age: <br>
-                <input v-model="age" type="text"> <br>
+                Enter age: <br> 
+                <input v-model="age" 
+                    @input="fieldsTouched.age = true"
+                    :class="{
+                        'inputError': errors.age,
+                        'inputSuccess': fieldsTouched.age && !errors.age 
+                    }"
+                    type="text"> <br>
                 <span v-if="errors.age" >{{ errors.age }}</span>
             </p> <br>
             <p>
                 Enter email: <br>
-                <input v-model="email" type="email"> <br>
+                <input v-model="email" 
+                    @input="fieldsTouched.email = true"
+                    :class="{
+                        'inputError': errors.email,
+                        'inputSuccess': fieldsTouched.email && !errors.email 
+                    }"
+                    type="email"> <br>
                 <span v-if="errors.email">{{ errors.email }}</span>
             </p> <br>
             <p>
                 Enter phone number: <br>
-                <input v-model="phone" type="text"> <br>
+                <input v-model="phone" 
+                    @input="fieldsTouched.phone = true"
+                    :class="{
+                        'inputError': errors.phone,
+                        'inputSuccess': fieldsTouched.phone && !errors.phone 
+                    }"
+                    type="text"> <br>
                 <span v-if="errors.phone">{{ errors.phone }}</span>
             </p> <br>
             <p>
                 Enter password: <br>
-                <input v-model="pwd" type="password"> <br>
+                <input v-model="pwd" 
+                    @input="fieldsTouched.pwd = true"
+                    :class="{
+                        'inputError': errors.pwd,
+                        'inputSuccess': fieldsTouched.pwd && !errors.pwd 
+                    }"
+                    type="password"> <br>
                 <span v-if="errors.pwd" >{{ errors.pwd }}</span>
             </p> <br>
             <div class="btn"> 
-                <button  type="submit" >Create</button>
+                <button  type="submit" 
+                    :disabled="!isFormValid"
+                    :style="{
+                        opacity: isFormValid ? 1 : 0.5,
+                        cursor: isFormValid ? 'pointer' : 'not-allowed'
+                    }"
+                    >Create</button>
             </div>
         </form> <br>
     </div>
-    <div class="table" v-if="users.length">
-        <table >
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Password</th>
-                    <th>age</th>
-                    <th>Phone</th>
-                </tr>
-                    
-            </thead>
-            <tbody>
-                <tr v-for="i in users">
-                    <td>{{i.username}}</td>
-                    <td>{{ i.email }}</td>
-                    <td>{{ i.password }}</td>
-                    <td>{{ i.age }}</td>
-                    <td>{{ i.phone }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div><br>
     </div>
+<!-- <UserTable 
+    :users="userStore.users" 
+    :columns="columns" 
+    @deleteUser="userStore.deleteUser"
+    >
+</UserTable> -->
 </template>
 
 <script setup>
+    import { useUserStore } from '../stores/userStore'
+    import { useRouter } from 'vue-router'
+    import UserTable from '../components/UserTable.vue'
     import { ref, computed, watch, onMounted } from 'vue'
 
     // onMounted(()=> {
     //     alert('onMounted called!')
     // })
-    
-    
 
-    const users = ref([])
+    const router = useRouter()
+    const columns = [
+        { key: 'firstname', label: 'Firstname' },
+        { key: 'lastname', label: 'Lastname' },
+        { key: 'email', label: 'Email' },
+        { key: 'password', label: 'Password' },
+        { key: 'age', label: 'Age' },
+        { key: 'phone', label: 'Phone' }
+    ]
+
+    const userStore = useUserStore()
+    // const handleDeleteUser = (index) => {
+    //     users.value.splice(index, 1)
+    // }
 
     const fname = ref('')
     const lname = ref('')
@@ -88,8 +127,15 @@
     const phone = ref('')
     const age = ref('')
     const errors = ref({})
-
-    const isValidForm = computed(() => {
+    const fieldsTouched = ref({
+        fname: false,
+        lname: false,
+        age: false,
+        email: false,
+        pwd: false,
+        phone: false
+    })
+    const isFormValid = computed(() => {
         return (
             fname.value &&
             lname.value &&
@@ -103,6 +149,8 @@
 
 
     watch(fname, (val) => {
+        if (!fieldsTouched.value.fname) return
+
         if (!val) {
             errors.value.fname = 'Firstname is required'
         } else if (!/^[A-Za-z]+$/.test(val)) {
@@ -112,6 +160,8 @@
         }
     })
     watch(lname, (val) => {
+        if (!fieldsTouched.value.lname) return
+
         if (!val) {
             errors.value.lname = 'Lastname is required'
         } else if (!/^[A-Za-z]+$/.test(val)) {
@@ -121,6 +171,8 @@
         }
     })
     watch(age, (val) => {
+        if (!fieldsTouched.value.age) return
+
         if (!val) {
             errors.value.age = 'Age is required'
         } else if (!/^[0-9]+$/.test(val)) {
@@ -132,6 +184,8 @@
         }
     })
     watch(email, (val) => {
+        if (!fieldsTouched.value.email) return
+
         if (!val) {
             errors.value.email = 'Email is required'
         } else if (
@@ -143,6 +197,8 @@
         }
     })
     watch(pwd, (val) => {
+        if (!fieldsTouched.value.pwd) return
+
         if (!val) {
             errors.value.pwd = 'Password is required'
         } else if (!/[a-zA-Z]/.test(val)) {
@@ -158,6 +214,8 @@
         }
     })
     watch(phone, (val) => {
+        if (!fieldsTouched.value.phone) return
+
         if (!val) {
             errors.value.phone = 'Phone number is required'
         } else if (!/^[0-9]{10}$/.test(val)) {
@@ -167,23 +225,54 @@
         }
     })
 
+    
 
     const validate = () => {
+        const newErrors = {}
+
+        if (!age.value) {
+            newErrors.age = 'Age is required'
+        } 
+
+        if (!fname.value) {
+            newErrors.fname = 'Username is required'
+        } 
+
+        if(!lname.value) {
+            newErrors.lname = 'Lastname is required'
+        }
+
+        if (!email.value) {
+            newErrors.email = 'Email is required'
+        } 
+
+        if (!pwd.value) {
+            newErrors.pwd = 'Password is required'
+        } 
+
+        if (!phone.value) {
+            newErrors.phone = 'Phone number is required'
+        } 
+
+        errors.value = newErrors
         return Object.keys(errors.value).length === 0
     }
+
 
     const addNewUser = () => {
         if (!validate()) return
 
-        users.value.push({
+        userStore.addUser({
             firstname: fname.value,
             lastname: lname.value,
-            fullname: fullname,
+            fullname: fullname.value,
             email: email.value,
             password: pwd.value,
             age: age.value,
             phone: phone.value
         })
+
+        router.push('/listUsers')
 
         fname.value = ''
         lname.value = ''
@@ -193,11 +282,24 @@
         age.value = ''
 
         errors.value = {}
+        Object.keys(fieldsTouched.value).forEach(key => {
+            fieldsTouched.value[key] = false
+        })
     }
 </script>
 
 
 <style scoped>
+.inputError {
+    border-color: red;
+    background-color: #ffecec;
+}
+
+.inputSuccess {
+    border-color: green !important;
+    background-color: #ecffec;
+}
+
 .page {
     /* width: 100%; */
     /* background-image: url('@/assets/bgCreateUserView.avif'); */
@@ -217,7 +319,7 @@ table {
 }
 
 th {
-    background-color: rgb(157, 75, 175);
+    background-color: rgb(75, 145, 175);
     color: whitesmoke;
     font-weight: 600;
 }
@@ -251,7 +353,7 @@ h2 {
     background-color: white;
     padding: 20px;
     margin: 10px;
-    border: 2px solid blueviolet;
+    border: 2px solid rgb(150, 223, 250);
     border-radius: 5px;
 }
 
@@ -259,9 +361,9 @@ input {
     width: 50%;
     padding: 8px;
     margin: 10px 0;
-    border: 2px solid blueviolet;
+    border: 2px solid rgb(150, 223, 250);
     border-radius: 5px;
-    background-color: rgb(245, 228, 242);
+    background-color: rgb(228, 240, 245);
     color: #080808;
 }
 .btn {
@@ -273,7 +375,7 @@ input {
 button {
     width: 90%;
     padding: 10px;
-    background-color: rgb(169, 80, 253);
+    background-color: rgb(80, 187, 253);
     color: aliceblue;
     border-radius: 5px;
     
