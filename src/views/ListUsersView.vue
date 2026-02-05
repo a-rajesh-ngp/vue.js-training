@@ -8,16 +8,22 @@
     </div>
     <div>
         <UserTable 
-            :users="filteredUsers" 
+            :users="paginatedUsersData" 
             :columns="columns" 
             @delete-user="userStore.deleteUser"
             >
         </UserTable>
     </div>
+    <div class="pagination">
+        <button @click="currentPage--" :disabled="currentPage===1">Prev</button>
+        <span>Page {{ currentPage }} of {{ totalPages }}</span>
+        <button @click="currentPage++" :disabled="currentPage===totalPages">Next</button>
+    </div>
+
 </template>
 
 <script setup>
-    import { computed, ref } from 'vue';
+    import { computed, ref, watch } from 'vue';
     import UserTable from '../components/UserTable.vue'
     import { useUserStore } from '../stores/userStore';
 
@@ -42,6 +48,24 @@
                 .includes(q.toLowerCase())
         )
     })
+
+    const recordsPerPage = 10
+    const currentPage = ref(1)
+
+    const totalPages = computed(()=> {
+        const pages = Math.ceil(filteredUsers.value.length / recordsPerPage)
+        return pages === 0 ? 1 : pages
+    })
+
+    const paginatedUsersData = computed(() => {
+        const start = (currentPage.value -1) * recordsPerPage
+        return filteredUsers.value.slice(start, start + recordsPerPage)
+    })
+
+    watch(filteredUsers, ()=> {
+        currentPage.value=1
+    }) 
+
 
 </script>
 
