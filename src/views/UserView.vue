@@ -28,10 +28,9 @@
         </div>
         <div class="counter">
             <h2>Counter Value: {{ count }}</h2>
-            <button @click="incrementCount">Increment</button>
-            <button @click="decrementCount">Decrement</button>
-            <button @click="resetCount">Reset</button>
-            
+            <button @click="increment">Increment</button>
+            <button @click="decrement">Decrement</button>
+            <button @click="reset">Reset</button>
         </div>
     </div>
 </template>
@@ -88,6 +87,7 @@ th, td {
 
 <script scoped>
 import {ref} from 'vue'
+import { counter } from '../composables/counter';
 
     export default {
         setup() {
@@ -101,7 +101,7 @@ import {ref} from 'vue'
                     {name: 'student6', mark: 50},
                 ]);
             const isVisible= ref(false);
-            const  count= ref(0);
+            // const  count= ref(0);
         
             const showUsers= () => {
                 isVisible.value = true
@@ -109,15 +109,22 @@ import {ref} from 'vue'
             const hideUsers=() => {
                 isVisible.value = false
             };
-            const incrementCount=()=> {
-                count.value+=1
-            };
-            const decrementCount= ()=> {
-                count.value-=1
-            };
-            const resetCount=() => {
-                count.value =0
-            };
+            // const incrementCount=()=> {
+            //     count.value+=1
+            // };
+            // const decrementCount= ()=> {
+            //     count.value-=1
+            // };
+            // const resetCount=() => {
+            //     count.value =0
+            // };
+
+            const {
+                count,
+                increment,
+                decrement,
+                reset
+            } = counter(0);
 
             return {
                 users,
@@ -125,9 +132,9 @@ import {ref} from 'vue'
                 count,
                 showUsers,
                 hideUsers,
-                incrementCount,
-                decrementCount,
-                resetCount
+                increment,
+                decrement,
+                reset
             }
         }
     }

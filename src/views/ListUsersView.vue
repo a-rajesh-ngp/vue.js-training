@@ -1,24 +1,57 @@
 <template>
     <div class="search">
-        <input
+        <v-text-field
             v-model="search"
             type="text"
+            variant="outlined"
+            prepend-inner-icon="mdi-magnify"
             placeholder="Search by firstname..."
+            max-width="300"
+            density="compact"
         />
     </div>
     <div>
         <UserTable 
             :users="paginatedUsersData" 
             :columns="columns" 
-            @delete-user="userStore.deleteUser"
+            @delete-user="requestDelete"
+            @update-user="goToEdit"
             >
         </UserTable>
+        <ConfirmDialog
+            v-model="userToDelete"
+        >
+            <template #title>
+                Delete User
+            </template>
+            <template #default>
+                <p> 
+                    Are you sure you want to delete the data of
+                    <strong>
+                        {{ userToDelete?.firstname }} {{ userToDelete?.lastname }}
+                    </strong>?
+                </p>
+                <p class="text-caption text-grey">
+                    Email: {{ userToDelete?.email }}
+                </p>
+            </template>
+            <template #actions="{close}">
+                <v-btn variant="text" @click="close"> 
+                    Cancel
+                </v-btn>
+                <v-btn color="red" @click="confirmDelete" >
+                    Delete
+                </v-btn>
+            </template>
+            
+        </ConfirmDialog>
+
     </div>
-    <div class="pagination">
+    <!-- <div class="pagination">
         <button @click="currentPage--" :disabled="currentPage===1">Prev</button>
         <span>Page {{ currentPage }} of {{ totalPages }}</span>
         <button @click="currentPage++" :disabled="currentPage===totalPages">Next</button>
-    </div>
+    </div> -->
 
 </template>
 
@@ -26,6 +59,25 @@
     import { computed, ref, watch } from 'vue';
     import UserTable from '../components/UserTable.vue'
     import { useUserStore } from '../stores/userStore';
+    import ConfirmDialog from '../components/ConfirmDialog.vue';
+    import router from '../router';
+
+    const userToDelete = ref(null)
+
+    const requestDelete = (user) => {
+        console.log(user)
+        userToDelete.value = user
+    }
+
+    const goToEdit = (user) => {
+        router.push(`/form2/${user.id}`)
+    }
+
+    const confirmDelete = () => {
+        if(!userToDelete.value) return
+        userStore.deleteUser(userToDelete.value)
+        userToDelete.value = null
+    }
 
     const userStore = useUserStore()
     const columns = [
@@ -80,6 +132,15 @@ input {
 .search {
     display: flex;
     justify-content: center;
+
+}
+
+:deep(.v-field) {
+    border-radius: 8px;
+}
+
+:deep(.v-field__input) {
+    font-size: 14px;
 }
 
 </style>

@@ -1,35 +1,41 @@
 <template>
-    <form class="form" @submit.prevent="submitForm">
-        <h2>CREATE NEW USER </h2> <br>
-        
+    <form class="form" v-if="user" @submit.prevent="submitForm">
+        <h2>
+            <slot name="title"> 
+                CREATE NEW USER 
+            </slot>
+        </h2> <br>
         <p>
             Enter firstname: <br>
-            <input v-model="fname"
-                @input="fieldsTouched.fname = true"
+            <input  v-model="user.firstname"
+                v-autofocus
+                v-uppercase
+                @input="fieldsTouched.firstname = true"
                 :class="{
-                    'inputError': errors.fname,
-                    'inputSuccess': fieldsTouched.fname && !errors.fname 
+                    'inputError': errors.firstname,
+                    'inputSuccess': fieldsTouched.firstname && !errors.firstname 
                 }"
                 type="text"> <br>
-            <span v-if="errors.fname" >{{ errors.fname }}</span>
+            <span v-if="errors.firstname" >{{ errors.firstname }}</span>
         </p> <br>
         <p>
             Enter lastname: <br>
-            <input v-model="lname" 
-                @input="fieldsTouched.lname = true"
+            <input v-model="user.lastname" 
+                v-uppercase
+                @input="fieldsTouched.lastname = true"
                 :class="{
-                    'inputError': errors.lname,
-                    'inputSuccess': fieldsTouched.lname && !errors.lname 
+                    'inputError': errors.lastname,
+                    'inputSuccess': fieldsTouched.lastname && !errors.lastname 
                 }"
                 type="text"> <br>
-            <span v-if="errors.lname" >{{ errors.lname }}</span>
+            <span v-if="errors.lastname" >{{ errors.lastname }}</span>
         </p> <br>
-        <p>
+        <p >
             Full name: {{ fullname }}
         </p><br>
         <p>
             Enter age: <br> 
-            <input v-model="age" 
+            <input v-model="user.age" 
                 @input="fieldsTouched.age = true"
                 :class="{
                     'inputError': errors.age,
@@ -40,7 +46,7 @@
         </p> <br>
         <p>
             Enter email: <br>
-            <input v-model="email" 
+            <input v-model="user.email" 
                 @input="fieldsTouched.email = true"
                 :class="{
                     'inputError': errors.email,
@@ -51,7 +57,7 @@
         </p> <br>
         <p>
             Enter phone number: <br>
-            <input v-model="phone" 
+            <input v-model="user.phone" 
                 @input="fieldsTouched.phone = true"
                 :class="{
                     'inputError': errors.phone,
@@ -62,89 +68,96 @@
         </p> <br>
         <p>
             Enter password: <br>
-            <input v-model="pwd" 
-                @input="fieldsTouched.pwd = true"
+            <input v-model="user.password" 
+                @input="fieldsTouched.password = true"
                 :class="{
-                    'inputError': errors.pwd,
-                    'inputSuccess': fieldsTouched.pwd && !errors.pwd 
+                    'inputError': errors.password,
+                    'inputSuccess': fieldsTouched.password && !errors.password 
                 }"
                 type="password"> <br>
-            <span v-if="errors.pwd" >{{ errors.pwd }}</span>
+            <span v-if="errors.password" >{{ errors.password }}</span>
         </p> <br>
         <div class="btn"> 
-            <button  type="submit" 
+            <slot name="actions">
+                <button  type="submit" 
 
-                :disabled="!isFormValid"
-                :style="{
-                    opacity: isFormValid ? 1 : 0.5,
-                    cursor: isFormValid ? 'pointer' : 'not-allowed'
-                }"
-                >Create</button>
+                    :disabled="!isFormValid"
+                    :style="{
+                        opacity: isFormValid ? 1 : 0.5,
+                        cursor: isFormValid ? 'pointer' : 'not-allowed'
+                    }"
+                    >Create</button>
+            </slot>
         </div>
     </form> <br>
 </template>
 
 <script setup>
     import { ref, computed, watch, onMounted } from 'vue'
+    import { vUppercase } from '../directives/uppercase'
+    import { vAutoFocus } from '../directives/autoFocus'
 
-    const fname = ref('')
-    const lname = ref('')
-    const fullname = computed(() => {
-        return `${fname.value} ${lname.value}`.trim()
-    })
-    const email = ref('')
-    const pwd = ref('')
-    const phone = ref('')
-    const age = ref('')
     const errors = ref({})
     const emit = defineEmits(['submit'])
+    
+    const user = defineModel()
 
-
+    // const vUpperCase = {
+        
+    // }
+    
+  
     const fieldsTouched = ref({
-        fname: false,
-        lname: false,
+        firstname: false,
+        lastname: false,
         age: false,
         email: false,
-        pwd: false,
+        password: false,
         phone: false
     })
     
     const isFormValid = computed(() => {
         return (
-            fname.value &&
-            lname.value &&
-            age.value &&
-            email.value &&
-            pwd.value &&
-            phone.value &&
+            user.value.firstname.value &&
+            user.value.lastname.value &&
+            user.value.age.value &&
+            user.value.email.value &&
+            user.value.password.value &&
+            user.value.phone.value &&
             Object.keys(errors.value).length === 0
         )
     })
 
 
-    watch(fname, (val) => {
-        if (!fieldsTouched.value.fname) return
+    const fullname = computed(()=> {
+        
+        return `${user.value.firstname?? ""} ${user.value.lastname??""}`.trim()
+    })
+
+
+    watch(()=> user.value.firstname, (val) => {
+        if (!fieldsTouched.value.firstname) return
 
         if (!val) {
-            errors.value.fname = 'Firstname is required'
+            errors.value.firstname = 'Firstname is required'
         } else if (!/^[A-Za-z]+$/.test(val)) {
-            errors.value.fname = 'Firstname should have only alphabets'
+            errors.value.firstname = 'Firstname should have only alphabets'
         } else {
-            delete errors.value.fname
+            delete errors.value.firstname
         }
     })
-    watch(lname, (val) => {
-        if (!fieldsTouched.value.lname) return
+    watch(()=> user.value.lastname, (val) => {
+        if (!fieldsTouched.value.lastname) return
 
         if (!val) {
-            errors.value.lname = 'Lastname is required'
+            errors.value.lastname = 'Lastname is required'
         } else if (!/^[A-Za-z]+$/.test(val)) {
-            errors.value.lname = 'Lastname should have only alphabets'
+            errors.value.lastname = 'Lastname should have only alphabets'
         } else {
-            delete errors.value.lname
+            delete errors.value.lastname
         }
     })
-    watch(age, (val) => {
+    watch(()=> user.value.age, (val) => {
         if (!fieldsTouched.value.age) return
 
         if (!val) {
@@ -157,7 +170,7 @@
             delete errors.value.age
         }
     })
-    watch(email, (val) => {
+    watch(()=> user.value.email, (val) => {
         if (!fieldsTouched.value.email) return
 
         if (!val) {
@@ -170,24 +183,24 @@
             delete errors.value.email
         }
     })
-    watch(pwd, (val) => {
-        if (!fieldsTouched.value.pwd) return
+    watch(()=> user.value.password, (val) => {
+        if (!fieldsTouched.value.password) return
 
         if (!val) {
-            errors.value.pwd = 'Password is required'
+            errors.value.password = 'Password is required'
         } else if (!/[a-zA-Z]/.test(val)) {
-            errors.value.pwd = 'Password should have atleast one alphabet'
+            errors.value.password = 'Password should have atleast one alphabet'
         } else if (!/[0-9]/.test(val)) {
-            errors.value.pwd = 'Password should have atleast one number'
+            errors.value.password = 'Password should have atleast one number'
         } else if (!/[^a-zA-Z0-9]/.test(val)) {
-            errors.value.pwd = 'Password should have atleast one special character'
+            errors.value.password = 'Password should have atleast one special character'
         } else if (val.length < 6) {
-            errors.value.pwd = 'Password length should be at least 6'
+            errors.value.password = 'Password length should be at least 6'
         } else {
-            delete errors.value.pwd
+            delete errors.value.password
         }
     })
-    watch(phone, (val) => {
+    watch(()=> user.value.phone, (val) => {
         if (!fieldsTouched.value.phone) return
 
         if (!val) {
@@ -202,28 +215,28 @@
     const validate = () => {
         const newErrors = {}
 
-        if (!age.value) {
+        if (!user.value.age) {
             newErrors.age = 'Age is required'
         } 
 
-        if (!fname.value) {
-            newErrors.fname = 'Username is required'
+        if (!user.value.firstname) {
+            newErrors.firstname = 'Username is required'
         } 
 
-        if(!lname.value) {
-            newErrors.lname = 'Lastname is required'
+        if(!user.value.lastname) {
+            newErrors.lastname = 'Lastname is required'
         }
 
-        if (!email.value) {
+        if (!user.value.email) {
             newErrors.email = 'Email is required'
             
         } 
 
-        if (!pwd.value) {
-            newErrors.pwd = 'Password is required'
+        if (!user.value.password) {
+            newErrors.password = 'Password is required'
         } 
 
-        if (!phone.value) {
+        if (!user.value.phone) {
             newErrors.phone = 'Phone number is required'
         } 
 
@@ -235,22 +248,14 @@
     const submitForm = () => {
         if(!validate()) return
 
-        emit('submit', {
-            firstname: fname.value,
-            lastname: lname.value,
-            fullname: fullname.value,
-            age: age.value,
-            email: email.value,
-            phone: phone.value,
-            password: pwd.value
-        })
+        emit('submit')
 
-        fname.value = ''
-        lname.value = ''
-        email.value = ''
-        pwd.value = ''
-        phone.value = ''
-        age.value = ''
+        // firstname.value = ''
+        // lastname.value = ''
+        // email.value = ''
+        // password.value = ''
+        // phone.value = ''
+        // age.value = ''
 
         errors.value = {}
         Object.keys(fieldsTouched.value).forEach(key => {
@@ -342,6 +347,5 @@ button {
     background-color: rgb(80, 187, 253);
     color: aliceblue;
     border-radius: 5px;
-    
 }
 </style>
